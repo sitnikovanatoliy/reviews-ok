@@ -20,14 +20,23 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SERVER_PORT }}
         script: |
+          # load nvm
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
           nvm install 18
           nvm use 18
 
+          # move into project
           cd /home/siteok/reviews-ok.online/www/reviews-ok
+
+          # pull latest and install deps
           git pull origin main
           npm ci
-          npm install -g pm2
 
-          pm2 restart reviews-ok || pm2 start ecosystem.config.js
+          # export OAuth‑секреты в окружение
+          export SESSION_SECRET="${{ secrets.SESSION_SECRET }}"
+          export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
+          export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
+
+          # restart via PM2 using ecosystem.config.js
+          pm2 restart ecosystem.config.js --update-env || pm2 start ecosystem.config.js --update-env
