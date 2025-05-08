@@ -16,8 +16,9 @@ const passport = require('./src/auth');
 
 // Подключаем официальный клиент Redis и адаптер для express-session
 const { createClient } = require('redis');
-const connectRedis     = require('connect-redis');
-const RedisStore       = connectRedis(session);
+// из-за ESM-экспорта connect-redis нужно брать default
+const connectRedis = require('connect-redis').default;
+const RedisStore   = connectRedis(session);
 
 const redisClient = createClient({ url: process.env.REDIS_URL });
 redisClient.connect().catch(console.error);
