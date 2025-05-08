@@ -28,5 +28,6 @@ jobs:
           cd /home/siteok/reviews-ok.online/www/reviews-ok
           git pull origin main
           npm ci
+          npm install -g pm2
 
           pm2 restart reviews-ok || pm2 start ecosystem.config.js
