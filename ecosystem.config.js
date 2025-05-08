@@ -1,28 +1,17 @@
-const path = require('path');
-
 module.exports = {
   apps: [
     {
       name: 'reviews-ok',
-      cwd: path.resolve(__dirname),
+      cwd: '/home/siteok/reviews-ok.online/www/reviews-ok',
       script: 'app.js',
-      error_file: './logs/err.log',
-      out_file:  './logs/out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm Z',
 
-      // Указываем PM2, откуда брать .env
-      env_file: path.resolve(__dirname, '.env'),
+      // подключаем файл .env
+      env_file: './.env',
 
-      // Базовые переменные, всегда нужны
-      env: {
-        NODE_ENV: 'development',
-        PORT:     3000
-      },
-
-      // Переменные для production
+      // сюда попадут NODE_ENV и PORT
       env_production: {
         NODE_ENV: 'production',
-        PORT:     3000
+        PORT:    3000
       }
     }
   ]
