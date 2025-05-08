@@ -5,21 +5,12 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm install
 
     - name: Deploy to server via SSH
       uses: appleboy/ssh-action@master
@@ -29,6 +20,20 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SERVER_PORT }}
         script: |
+          # подгружаем nvm (если вы устанавливали Node через nvm)
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+          # переключаемся на нужную версию Node
+          nvm install 18
+          nvm use 18
+
+          # заход в директорию проекта
           cd /home/siteok/reviews-ok.online/www/reviews-ok
+
+          # подтягиваем последние изменения и ставим зависимости
           git pull origin main
-          npm install
+          npm ci
+
+          # перезапускаем через PM2 (или ваш процесс-менеджер)
+          pm2 restart reviews-ok || pm2 start ecosystem.config.js
