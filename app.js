@@ -5,12 +5,18 @@ require('dotenv').config();
 console.log('> ENV:', {
   GOOGLE_CLIENT_ID:     process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-  SESSION_SECRET:       process.env.SESSION_SECRET
+  SESSION_SECRET:       process.env.SESSION_SECRET,
+  REDIS_URL:            process.env.REDIS_URL
 });
 
 const express       = require('express');
 const session       = require('express-session');
 const passport      = require('./src/auth');
+
+// Подключаем Redis для хранения сессий
+const Redis         = require('ioredis');
+const RedisStore    = require('connect-redis')(session);
+const redisClient   = new Redis(process.env.REDIS_URL);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,7 +30,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // === Настройка сессий и Passport ===
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'change_this_secret',
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
