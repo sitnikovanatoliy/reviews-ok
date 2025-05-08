@@ -15,9 +15,11 @@ const session     = require('express-session');
 const passport    = require('./src/auth');
 
 // Подключаем Redis для хранения сессий
-const Redis       = require('ioredis');
-const RedisStore  = require('connect-redis')(session);
-const redisClient = new Redis(process.env.REDIS_URL);
+const { createClient } = require('redis');
+const RedisStore       = require('connect-redis')(session);
+const redisClient      = createClient({ url: process.env.REDIS_URL });
+// Обязательно дождаться подключения
+redisClient.connect().catch(console.error);
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
