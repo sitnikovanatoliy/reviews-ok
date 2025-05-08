@@ -7,7 +7,7 @@ console.log('> ENV:', {
   GOOGLE_CLIENT_ID:     process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   SESSION_SECRET:       process.env.SESSION_SECRET,
-  REDIS_URL:            process.env.REDIS_URL || 'redis://localhost:6379'
+  REDIS_URL:            process.env.REDIS_URL
 });
 
 const express = require('express');
@@ -16,13 +16,10 @@ const passport = require('./src/auth');
 
 // Подключаем официальный клиент Redis и адаптер для express-session
 const { createClient } = require('redis');
-const RedisStoreModule  = require('connect-redis');
-const RedisStore        = RedisStoreModule.default
-  ? RedisStoreModule.default(session)
-  : RedisStoreModule(session);
+const connectRedis     = require('connect-redis');
+const RedisStore       = connectRedis(session);
 
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-const redisClient = createClient({ url: redisUrl });
+const redisClient = createClient({ url: process.env.REDIS_URL });
 redisClient.connect().catch(console.error);
 
 const app  = express();
@@ -37,9 +34,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // === Настройка сессий и Passport ===
 app.use(session({
-  store:   new RedisStore({ client: redisClient }),
-  secret:  process.env.SESSION_SECRET,
-  resave:  false,
+  store:            new RedisStore({ client: redisClient }),
+  secret:           process.env.SESSION_SECRET,
+  resave:           false,
   saveUninitialized: false,
   cookie: {
     secure:   process.env.NODE_ENV === 'production',
