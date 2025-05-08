@@ -1,8 +1,4 @@
 const path = require('path');
-// Жёстко указываем, где искать .env
-require('dotenv').config({
-  path: path.resolve(__dirname, '.env')
-});
 
 module.exports = {
   apps: [
@@ -13,13 +9,20 @@ module.exports = {
       error_file: './logs/err.log',
       out_file:  './logs/out.log',
       log_date_format: 'YYYY-MM-DD HH:mm Z',
+
+      // Указываем PM2, откуда брать .env
+      env_file: path.resolve(__dirname, '.env'),
+
+      // Базовые переменные, всегда нужны
       env: {
-        NODE_ENV:            'production',
-        PORT:                3000,
-        GOOGLE_CLIENT_ID:     process.env.GOOGLE_CLIENT_ID,
-        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-        SESSION_SECRET:       process.env.SESSION_SECRET,
-        REDIS_URL:            process.env.REDIS_URL
+        NODE_ENV: 'development',
+        PORT:     3000
+      },
+
+      // Переменные для production
+      env_production: {
+        NODE_ENV: 'production',
+        PORT:     3000
       }
     }
   ]
