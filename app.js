@@ -1,6 +1,4 @@
-// app.js
 const express       = require('express');
-const cookieParser  = require('cookie-parser');
 const session       = require('express-session');
 const passport      = require('./src/auth');
 
@@ -14,9 +12,6 @@ app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// разбор Cookie (нужен для express-session)
-app.use(cookieParser());
-
 // === Настройка сессий и Passport ===
 app.use(session({
   secret: process.env.SESSION_SECRET || 'change_this_secret',
@@ -24,8 +19,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production', // только по HTTPS
-    sameSite: 'none',                             // разрешаем кросс‑сайт навигацию (OAuth)
-    httpOnly: true,                               // недоступно из JS
+    sameSite: 'none',                             // OAuth callback
     maxAge: 24 * 60 * 60 * 1000                   // 1 сутки
   }
 }));
@@ -46,7 +40,6 @@ app.get('/auth/google',
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    // Успешная аутентификация — перенаправляем в личный кабинет
     res.redirect('/dashboard');
   }
 );
