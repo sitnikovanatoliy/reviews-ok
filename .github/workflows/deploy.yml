@@ -29,9 +29,9 @@ jobs:
           # move into project
           cd /home/siteok/reviews-ok.online/www/reviews-ok
 
-          # pull latest and install deps
+          # pull latest and install deps (use npm install to pick up cookie-parser)
           git pull origin main
-          npm ci
+          npm install
 
           # export OAuth‑секреты в окружение
           export SESSION_SECRET="${{ secrets.SESSION_SECRET }}"
