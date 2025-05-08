@@ -1,16 +1,21 @@
-const express = require('express');
-const session = require('express-session');
-const passport = require('./src/auth');
+// app.js
+const express       = require('express');
+const cookieParser  = require('cookie-parser');
+const session       = require('express-session');
+const passport      = require('./src/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// доверяем первому прокси (Nginx) — чтобы secure‑cookie работали за HTTPS
+// доверяем первому прокси (Nginx) — нужно для корректной работы secure‑cookie
 app.set('trust proxy', 1);
 
-// Body parsers (для JSON и form-data)
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// разбор Cookie (нужен для express-session)
+app.use(cookieParser());
 
 // === Настройка сессий и Passport ===
 app.use(session({
@@ -19,7 +24,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production', // только по HTTPS
-    sameSite: 'none'                               // разрешаем кросс‑сайт навигацию для OAuth callback
+    sameSite: 'none',                             // разрешаем кросс‑сайт навигацию (OAuth)
+    httpOnly: true,                               // недоступно из JS
+    maxAge: 24 * 60 * 60 * 1000                   // 1 сутки
   }
 }));
 app.use(passport.initialize());
