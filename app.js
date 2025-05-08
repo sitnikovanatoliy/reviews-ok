@@ -48,7 +48,8 @@ app.get('/dashboard', (req, res) => {
   if (!req.isAuthenticated()) {
     return res.redirect('/auth/google');
   }
-  res.send(`Привет, ${req.user.displayName}!`);
+  // заменили шаблонные backticks на конкатенацию
+  res.send('Привет, ' + req.user.displayName + '!');
 });
 // =============================
 
