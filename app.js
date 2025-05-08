@@ -5,7 +5,10 @@ const passport = require('./src/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Body parsers (если в дальнейшем понадобится получать JSON или form-data)
+// доверяем первому прокси (Nginx) — чтобы secure‑cookie работали
+app.set('trust proxy', 1);
+
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -14,7 +17,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'change_this_secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // только по HTTPS
+    sameSite: 'lax'                                // защита CSRF, но позволяет редирект из Google
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
