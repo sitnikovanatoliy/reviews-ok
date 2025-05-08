@@ -10,14 +10,13 @@ console.log('> ENV:', {
   REDIS_URL:            process.env.REDIS_URL
 });
 
-const express = require('express');
-const session = require('express-session');
-const passport = require('./src/auth');
+const express    = require('express');
+const session    = require('express-session');
+const passport   = require('./src/auth');
 
 // Подключаем официальный клиент Redis и адаптер для express-session
 const { createClient } = require('redis');
-const connectRedis     = require('connect-redis');      // убрали .default
-const RedisStore       = connectRedis(session);
+const RedisStore       = require('connect-redis')(session);
 
 const redisClient = createClient({ url: process.env.REDIS_URL });
 redisClient.connect().catch(console.error);
@@ -34,9 +33,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // === Настройка сессий и Passport ===
 app.use(session({
-  store:            new RedisStore({ client: redisClient }),
-  secret:           process.env.SESSION_SECRET,
-  resave:           false,
+  store:             new RedisStore({ client: redisClient }),
+  secret:            process.env.SESSION_SECRET,
+  resave:            false,
   saveUninitialized: false,
   cookie: {
     secure:   process.env.NODE_ENV === 'production',
