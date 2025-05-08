@@ -1,3 +1,4 @@
+// app.js
 // Явно указываем, где лежит .env
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
@@ -13,11 +14,9 @@ console.log('> ENV:', {
 const express    = require('express');
 const session    = require('express-session');
 const passport   = require('./src/auth');
-
-// Подключаем официальный клиент Redis и адаптер для express-session
-const { createClient }      = require('redis');
-const connectRedis          = require('connect-redis').default;
-const RedisStore            = connectRedis(session);
+const { createClient } = require('redis');
+// вот тут мы просто подключаем адаптер к express-session:
+const RedisStore       = require('connect-redis')(session);
 
 const redisClient = createClient({ url: process.env.REDIS_URL });
 redisClient.connect().catch(console.error);
