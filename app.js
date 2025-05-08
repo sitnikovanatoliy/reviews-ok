@@ -1,7 +1,8 @@
-// загрузка .env в process.env
-require('dotenv').config();
+// Явно указываем, где лежит .env
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-// Для проверки, что .env подхватился правильно:
+// Для проверки, что переменные из .env реально загрузились:
 console.log('> ENV:', {
   GOOGLE_CLIENT_ID:     process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
@@ -9,16 +10,16 @@ console.log('> ENV:', {
   REDIS_URL:            process.env.REDIS_URL
 });
 
-const express       = require('express');
-const session       = require('express-session');
-const passport      = require('./src/auth');
+const express     = require('express');
+const session     = require('express-session');
+const passport    = require('./src/auth');
 
 // Подключаем Redis для хранения сессий
-const Redis         = require('ioredis');
-const RedisStore    = require('connect-redis')(session);
-const redisClient   = new Redis(process.env.REDIS_URL);
+const Redis       = require('ioredis');
+const RedisStore  = require('connect-redis')(session);
+const redisClient = new Redis(process.env.REDIS_URL);
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // доверяем первому прокси (Nginx)
@@ -35,9 +36,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure:   process.env.NODE_ENV === 'production',
     sameSite: 'none',
-    maxAge: 24 * 60 * 60 * 1000
+    maxAge:   24 * 60 * 60 * 1000
   }
 }));
 app.use(passport.initialize());
