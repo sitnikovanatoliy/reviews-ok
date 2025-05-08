@@ -29,14 +29,20 @@ jobs:
           # move into project
           cd /home/siteok/reviews-ok.online/www/reviews-ok
 
-          # pull latest and install deps (use npm install to pick up cookie-parser)
+          # pull latest and install deps
           git pull origin main
-          npm install
+          npm ci
 
-          # export OAuth‑секреты в окружение
-          export SESSION_SECRET="${{ secrets.SESSION_SECRET }}"
-          export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
-          export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
+          # <<< создаём/обновляем файл .env из GitHub Secrets
+          cat > .env << 'EOF'
+          SESSION_SECRET=${{ secrets.SESSION_SECRET }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          PORT=3000
+          NODE_ENV=production
+          EOF
 
-          # restart via PM2 using ecosystem.config.js
-          pm2 restart ecosystem.config.js --update-env || pm2 start ecosystem.config.js --update-env
+          # restart via PM2 using ecosystem.config.js, dotenv будет читать .env
+          pm2 delete reviews-ok || true
+          pm2 start ecosystem.config.js --env production
+
