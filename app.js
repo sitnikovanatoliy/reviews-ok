@@ -1,6 +1,13 @@
 // загрузка .env в process.env
 require('dotenv').config();
 
+// Для проверки, что .env подхватился правильно:
+console.log('> ENV:', {
+  GOOGLE_CLIENT_ID:     process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  SESSION_SECRET:       process.env.SESSION_SECRET
+});
+
 const express       = require('express');
 const session       = require('express-session');
 const passport      = require('./src/auth');
