@@ -20,21 +20,19 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SERVER_PORT }}
         script: |
-          # load nvm
+          # 1. подготовка node
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
           nvm install 18
           nvm use 18
 
-          # move into project
+          # 2. проект
           cd /home/siteok/reviews-ok.online/www/reviews-ok
-
-          # pull latest and install deps
           git pull origin main
           npm ci
 
-          # <<< создаём/обновляем файл .env из GitHub Secrets
-          cat > .env << 'EOF'
+          # 3. .env собираем из Secrets (ничего больше руками не правим!)
+          cat > .env <<'EOF'
           SESSION_SECRET=${{ secrets.SESSION_SECRET }}
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
@@ -43,6 +41,6 @@ jobs:
           NODE_ENV=production
           EOF
 
-          # restart via PM2 using ecosystem.config.js, dotenv будет читать .env
+          # 4. перезапуск через PM2
           pm2 delete reviews-ok || true
           pm2 start ecosystem.config.js --env production --update-env
