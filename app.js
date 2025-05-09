@@ -18,21 +18,13 @@ const session  = require('express-session');
 const passport = require('./src/auth');
 
 // Подключаем официальный клиент Redis и адаптер для express-session
-const { createClient } = require('redis');
-// в новых версиях connect-redis экспортируется под default
-const connectRedis = require('connect-redis').default || require('connect-redis');
-const RedisStore   = connectRedis(session);
+const { createClient }     = require('redis');
+// В версии connect-redis@5 достаточно просто require и передать session
+const RedisStoreConstructor = require('connect-redis')(session);
 
-// создаём клиент в legacyMode для совместимости с connect-redis
-const redisClient = createClient({
-  url: process.env.REDIS_URL,
-  legacyMode: true
-});
-
-// логируем ошибки Redis
+const redisClient = createClient({ url: process.env.REDIS_URL });
 redisClient.on('error', err => console.error('❌ Redis Client Error', err));
 
-// подключаемся к Redis
 redisClient.connect()
   .then(() => console.log('✅ Redis connected'))
   .catch(console.error);
@@ -49,7 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // === Настройка сессий и Passport ===
 app.use(session({
-  store:             new RedisStore({ client: redisClient }),
+  store:             new RedisStoreConstructor({ client: redisClient }),
   secret:            process.env.SESSION_SECRET,
   resave:            false,
   saveUninitialized: false,
