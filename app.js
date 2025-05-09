@@ -15,22 +15,21 @@ const session  = require('express-session');
 const passport = require('./src/auth');
 
 const { createClient } = require('redis');
-// --------------- ВАЖНО! ---------------
-// v5.x экспортирует функцию‑фабрику, а не default‑объект
+// connect‑redis@5 экспортирует фабрику, поэтому вызываем её
 const RedisStore = require('connect-redis')(session);
-// --------------------------------------
 
-/* ---------- Redis (TLS) ---------- */
+/* ---------- Redis (plain TCP) ---------- */
 const redisClient = createClient({
-  url   : process.env.REDIS_URL,   // rediss://user:pass@host:port
-  socket: { tls: true }            // TLS‑рукопожатие; IPv4/IPv6 выбирается автоматически
+  url       : process.env.REDIS_URL,       // redis://user:pass@host:port
+  legacyMode: true,                        // нужен connect‑redis@5
+  socket    : { family: 4 }                // принудительно IPv4, без TLS
 });
 
 redisClient.on('error', (e) => console.error('❌ Redis error:', e));
 
 (async () => {
   await redisClient.connect();
-  console.log('✅ Redis connected (TLS)');
+  console.log('✅ Redis connected (TCP)');
 })();
 
 /* ---------- Express ---------- */
@@ -49,7 +48,7 @@ app.use(session({
   cookie: {
     secure  : process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge  : 24 * 60 * 60 * 1000   // 1 сутки
+    maxAge  : 24 * 60 * 60 * 1000   // 1 сутки
   }
 }));
 
