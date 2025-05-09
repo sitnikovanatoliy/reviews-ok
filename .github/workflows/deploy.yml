@@ -38,11 +38,11 @@ jobs:
           SESSION_SECRET=${{ secrets.SESSION_SECRET }}
           GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          REDIS_URL=${{ secrets.REDIS_URL }}
           PORT=3000
           NODE_ENV=production
           EOF
 
           # restart via PM2 using ecosystem.config.js, dotenv будет читать .env
           pm2 delete reviews-ok || true
-          pm2 start ecosystem.config.js --env production
-
+          pm2 start ecosystem.config.js --env production --update-env
