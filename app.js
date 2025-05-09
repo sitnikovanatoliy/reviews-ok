@@ -4,10 +4,10 @@ require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 /*----------------------------------  DEBUG  ---------------------------------*/
 console.log('> ENV:', {
-  GOOGLE_CLIENT_ID    : process.env.GOOGLE_CLIENT_ID,
-  SESSION_SECRET      : !!process.env.SESSION_SECRET,
-  REDIS_URL           : process.env.REDIS_URL,
-  NODE_ENV            : process.env.NODE_ENV
+  GOOGLE_CLIENT_ID : process.env.GOOGLE_CLIENT_ID,
+  SESSION_SECRET   : !!process.env.SESSION_SECRET,
+  REDIS_URL        : process.env.REDIS_URL,
+  NODE_ENV         : process.env.NODE_ENV
 });
 /*--------------------------------------------------------------------------- */
 
@@ -20,7 +20,7 @@ const RedisStore       = require('connect-redis')(session);
 
 // ─────────────────────── Redis ───────────────────────
 const redisClient = createClient({
-  url       : process.env.REDIS_URL,   // вида redis://user:pass@host:port
+  url       : process.env.REDIS_URL,   // redis://user:pass@host:port
   legacyMode: true,                    // нужен connect‑redis@5
   socket    : { family: 4 }            // принудительно IPv4
 });
@@ -34,10 +34,7 @@ redisClient
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// если сидим за nginx
-app.set('trust proxy', 1);
-
-// body‑парсеры
+app.set('trust proxy', 1);                 // сидим за nginx
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -54,7 +51,6 @@ app.use(session({
   }
 }));
 
-// Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -65,7 +61,12 @@ app.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
+// <<< Логируем факт прихода callback‑запроса
 app.get('/auth/google/callback',
+  (req, res, next) => {
+    console.log('>>> /auth/google/callback HIT', req.query);
+    next();
+  },
   passport.authenticate('google', { failureRedirect: '/' }),
   (_, res) => res.redirect('/dashboard')
 );
