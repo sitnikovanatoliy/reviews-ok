@@ -22,7 +22,14 @@ const { createClient }     = require('redis');
 // В версии connect-redis@5 достаточно просто require и передать session
 const RedisStoreConstructor = require('connect-redis')(session);
 
-const redisClient = createClient({ url: process.env.REDIS_URL });
+// создаём клиент в legacyMode для совместимости и принудительно по IPv4
+const redisClient = createClient({
+  legacyMode: true,
+  url: process.env.REDIS_URL,
+  socket: {
+    family: 4
+  }
+});
 redisClient.on('error', err => console.error('❌ Redis Client Error', err));
 
 redisClient.connect()
